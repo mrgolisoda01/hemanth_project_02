@@ -691,7 +691,7 @@ function saveEntry(){
   renderRecent();
 }
 function editEntry(id){
-  const e=ENTRIES.find(x=>x.id===id); if(!e) return;
+  const e=ENTRIES.find(x=>String(x.id)===String(id)); if(!e) return;
   window._editEntryId=id;
   document.getElementById('e-state').value=e.state;
   if(typeof populateCities==='function'){ try{ populateCities(); }catch(_){} }
@@ -717,10 +717,10 @@ function cancelEdit(){
   showToast('Edit cancelled');
 }
 function delEntry(id){
-  const e=ENTRIES.find(x=>x.id===id);
+  const e=ENTRIES.find(x=>String(x.id)===String(id));
   const label=e?`Daily entry: ${e.city} (${e.state}) ${e.date}, ${e.leads} leads`:'daily entry';
   const uid=snapshot('entry',label);
-  ENTRIES=ENTRIES.filter(x=>x.id!==id);
+  ENTRIES=ENTRIES.filter(x=>String(x.id)!==String(id));
   saveE();
   if(e) logAction('Deleted daily entry','Daily Entry',`${e.city} (${e.state}) on ${e.date}: was ${e.leads} leads, ${e.eligible} elig, ${e.mv} MV, ${e.sales} sales`,uid);
   if(window._editEntryId===id) cancelEdit();
@@ -748,7 +748,7 @@ function renderRecent(){
         <span class="ve-num">MV: <strong style="color:var(--burnt);">${e.mv}</strong></span>
         <span class="ve-num">Sales: <strong style="color:var(--sage);">${e.sales}</strong></span>
       </div>
-      <div class="ve-actions"><button class="btn btn-ghost btn-sm" onclick="editEntry(${e.id})">Edit</button><button class="btn btn-danger btn-sm" onclick="confirmBtn(this,()=>delEntry(${e.id}))">Delete</button></div>
+      <div class="ve-actions"><button class="btn btn-ghost btn-sm" onclick="editEntry('${e.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="confirmBtn(this,()=>delEntry('${e.id}'))">Delete</button></div>
     </div>`).join(''):'<div class="empty">No entries yet</div>';
 }
 function renderVerify(){
@@ -762,9 +762,9 @@ function renderVerify(){
   document.getElementById('verify-list').innerHTML=h||'<div class="empty">No entries</div>';
 }
 function veC(e,ro){
-  return `<div class="ve ${e.status}"><div class="ve-hdr"><div><strong>${e.city}</strong><span style="color:var(--text2);font-size:12px;"> - ${e.state}</span><span class="pill ${e.status==='approved'?'pill-ok':e.status==='flagged'?'pill-bad':'pill-warn'}" style="margin-left:8px;">${e.status}</span></div><span style="font-size:11px;color:var(--text2);">${e.date}${e.by?' \u00b7 '+e.by:''}</span></div><div class="ve-nums"><span class="ve-num">Leads: <strong>${e.leads}</strong></span><span class="ve-num">Elig: <strong style="color:var(--teal);">${e.eligible}</strong></span><span class="ve-num">MV: <strong style="color:var(--burnt);">${e.mv}</strong></span><span class="ve-num">Sales: <strong style="color:var(--sage);">${e.sales}</strong></span>${e.notes?`<span class="ve-num" style="color:var(--text2);">${e.notes}</span>`:''}</div>${!ro?`<div class="ve-actions"><button class="btn btn-amber btn-sm" onclick="doVerify(${e.id},'approved')">Approve</button><button class="btn btn-danger btn-sm" onclick="doVerify(${e.id},'flagged')">Flag</button></div>`:''}</div>`;
+  return `<div class="ve ${e.status}"><div class="ve-hdr"><div><strong>${e.city}</strong><span style="color:var(--text2);font-size:12px;"> - ${e.state}</span><span class="pill ${e.status==='approved'?'pill-ok':e.status==='flagged'?'pill-bad':'pill-warn'}" style="margin-left:8px;">${e.status}</span></div><span style="font-size:11px;color:var(--text2);">${e.date}${e.by?' \u00b7 '+e.by:''}</span></div><div class="ve-nums"><span class="ve-num">Leads: <strong>${e.leads}</strong></span><span class="ve-num">Elig: <strong style="color:var(--teal);">${e.eligible}</strong></span><span class="ve-num">MV: <strong style="color:var(--burnt);">${e.mv}</strong></span><span class="ve-num">Sales: <strong style="color:var(--sage);">${e.sales}</strong></span>${e.notes?`<span class="ve-num" style="color:var(--text2);">${e.notes}</span>`:''}</div>${!ro?`<div class="ve-actions"><button class="btn btn-amber btn-sm" onclick="doVerify('${e.id}','approved')">Approve</button><button class="btn btn-danger btn-sm" onclick="doVerify('${e.id}','flagged')">Flag</button></div>`:''}</div>`;
 }
-function doVerify(id,st){ const i=ENTRIES.findIndex(e=>e.id===id); if(i!==-1){ENTRIES[i].status=st;saveE();showToast(st==='approved'?'Approved \u2713':'Flagged',st==='approved'?'ok':'err');renderVerify();} }
+function doVerify(id,st){ const i=ENTRIES.findIndex(e=>String(e.id)===String(id)); if(i!==-1){ENTRIES[i].status=st;saveE();showToast(st==='approved'?'Approved \u2713':'Flagged',st==='approved'?'ok':'err');renderVerify();} }
 let setupOpenStates=new Set();
 function toggleSetupState(st){ setupOpenStates.has(st)?setupOpenStates.delete(st):setupOpenStates.add(st); renderSetup(); }
 function setupExpandAll(){ Object.keys(CFG.states).forEach(s=>setupOpenStates.add(s)); renderSetup(); }
@@ -1540,7 +1540,7 @@ function renderCD(){
     const srcTag=(r.source==='crm')?'<span class="pill pill-ok">CRM</span>':'<span class="pill" style="background:var(--surface3);color:var(--text2);">manual</span>';
     h+=`<tr>
       <td style="color:var(--text2);">${r.date}</td>
-      <td style="color:var(--text);font-weight:500;cursor:pointer;" onclick="editCD(${r.id})">${r.mgr} <span class="city-link">✎</span></td>
+      <td style="color:var(--text);font-weight:500;cursor:pointer;" onclick="editCD('${r.id}')">${r.mgr} <span class="city-link">✎</span></td>
       <td style="text-align:center;color:var(--blue);font-weight:600;">${r.total}</td>
       <td style="text-align:center;color:var(--sage);">${s.sla5} <span style="color:var(--text3);font-size:11px;">${p(s.sla5)}</span></td>
       <td style="text-align:center;color:${s15col};font-weight:600;">${s.sla15} <span style="color:var(--text3);font-size:11px;">${p(s.sla15)}</span></td>
@@ -1549,7 +1549,7 @@ function renderCD(){
       <td style="text-align:center;color:${r.notcalled>0?'var(--red)':'var(--text3)'};font-weight:${r.notcalled>0?'600':'400'};">${r.notcalled}</td>
       <td style="text-align:center;color:var(--sage);">${r.closed}</td>
       <td style="text-align:center;">${srcTag}</td>
-      <td style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm" onclick="editCD(${r.id})">Edit</button><button class="btn btn-danger btn-sm" onclick="confirmBtn(this,()=>delCD(${r.id}))">Del</button></td>
+      <td style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm" onclick="editCD('${r.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="confirmBtn(this,()=>delCD('${r.id}'))">Del</button></td>
     </tr>`;
     if(r.notes){ h+=`<tr><td colspan="11" style="color:var(--text2);font-size:12px;font-style:italic;padding-top:0;border-bottom:1px solid var(--border2);">📝 ${r.notes}</td></tr>`; }
   });
@@ -1728,6 +1728,20 @@ loadLog();
 loadMgrs();
 loadCD();
 loadBot(); loadMod(); loadAw(); loadHr();
+
+// ---- Hook for store.js: re-read entries (with real uuids) and re-render ----
+window.__refreshFromStore = function(){
+  try {
+    const raw = store.getItem('safc_e4');
+    if (raw) { ENTRIES = JSON.parse(raw) || []; }
+    // re-render whichever view is active so ids/buttons reflect the synced data
+    const active = document.querySelector('.view.active');
+    const id = active ? active.id : '';
+    if (id === 'view-verify' && typeof renderVerify === 'function') renderVerify();
+    else if (id === 'view-entry' && typeof renderRecent === 'function') renderRecent();
+    else if (id === 'view-dashboard' && typeof renderDash === 'function') renderDash();
+  } catch (e) { console.warn('refreshFromStore failed', e); }
+};
 
 // ---- Deferred startup: wait for Supabase data to load, then init ----
 (window.__storeReady || Promise.resolve()).then(function(){
