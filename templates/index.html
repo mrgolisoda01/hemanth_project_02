@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SAFC India Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+:root{
+  --base:#16161a;
+  --surface:#1f1f26;
+  --surface2:#26262e;
+  --surface3:#33333d;
+  --amber:#e8b84b;
+  --amber-dim:rgba(232,184,75,0.12);
+  --amber-soft:rgba(232,184,75,0.22);
+  --blue:#56a8f5;
+  --blue-dim:rgba(86,168,245,0.12);
+  --teal:#2fd6a8;
+  --teal-dim:rgba(47,214,168,0.12);
+  --burnt:#f5a623;
+  --burnt-dim:rgba(245,166,35,0.12);
+  --sage:#5fd66f;
+  --sage-dim:rgba(95,214,111,0.12);
+  --red:#ff5c5c;
+  --red-dim:rgba(255,92,92,0.15);
+  --text:#f2f0ea;
+  --text2:#9b9aa3;
+  --text3:#6e6d77;
+  --border:rgba(255,255,255,0.08);
+  --border2:rgba(255,255,255,0.04);
+  --shadow:0 2px 12px rgba(0,0,0,0.35);
+  --shadow-lg:0 4px 24px rgba(0,0,0,0.5);
+  --radius:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--base);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;}
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:200;box-shadow:var(--shadow);}
+.nav-quick{display:flex;gap:2px;flex:1;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.menu-btn{display:flex;align-items:center;gap:8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 16px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;transition:all 0.15s;}
+.menu-btn:hover{background:var(--surface3);border-color:var(--amber);}
+.menu-ico{font-size:16px;line-height:1;}
+.menu-drawer{position:fixed;top:0;right:0;height:100vh;width:280px;max-width:82vw;background:var(--surface);border-left:1px solid var(--border);box-shadow:-6px 0 28px rgba(0,0,0,0.55);z-index:400;transform:translateX(100%);transition:transform 0.22s ease;padding:18px 0;overflow-y:auto;}
+.menu-drawer.open{transform:translateX(0);}
+.menu-drawer-hdr{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:8px 22px 14px;}
+.menu-item{display:block;padding:13px 22px;color:var(--text2);font-size:15px;font-weight:500;cursor:pointer;border-left:3px solid transparent;transition:all 0.12s;}
+.menu-item:hover{background:var(--surface2);color:var(--text);}
+.menu-item.active{color:var(--amber);border-left-color:var(--amber);background:var(--amber-dim);}
+.menu-backdrop{position:fixed;inset:0;background:rgba(10,10,14,0.6);z-index:390;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.menu-backdrop.open{opacity:1;pointer-events:auto;}
+.brand{font-family:'Space Mono',monospace;font-size:13px;color:var(--amber);padding:16px 0;letter-spacing:2px;white-space:nowrap;}
+.brand em{color:var(--text2);font-style:normal;}
+.nav-tabs{display:flex;}
+.nav-tab{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:16px 16px;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap;}
+.nav-tab.active{color:var(--amber);border-bottom-color:var(--amber);}
+.nav-tab:hover{color:var(--text);}
+.day-pill{font-family:'Space Mono',monospace;font-size:10px;color:var(--text2);background:var(--surface2);padding:5px 12px;border-radius:20px;white-space:nowrap;}
+.view{display:none;padding:28px 24px;max-width:1100px;margin:0 auto;}
+.view.active{display:block;}
+.pg-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.pg-sub{font-size:12px;color:var(--text2);margin-bottom:28px;letter-spacing:0.3px;}
+.metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+.mc{background:var(--surface);border-radius:var(--radius);padding:20px 22px;border:1px solid var(--border);position:relative;overflow:hidden;}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.mc-leads::before{background:var(--blue);}
+.mc-elig::before{background:var(--teal);}
+.mc-mv::before{background:var(--burnt);}
+.mc-sales::before{background:var(--sage);}
+.mc-lbl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:10px;}
+.mc-val{font-size:38px;font-weight:700;line-height:1;margin-bottom:8px;}
+.mc-leads .mc-val{color:var(--blue);}
+.mc-elig .mc-val{color:var(--teal);}
+.mc-mv .mc-val{color:var(--burnt);}
+.mc-sales .mc-val{color:var(--sage);}
+.mc-meta{font-size:12px;color:var(--text2);margin-bottom:10px;}
+.mc-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;}
+.st-ok{background:var(--sage-dim);color:var(--sage);}
+.st-warn{background:var(--burnt-dim);color:var(--burnt);}
+.st-bad{background:var(--red-dim);color:var(--red);}
+.st-neutral{background:var(--teal-dim);color:var(--teal);}
+.drill-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:24px;box-shadow:var(--shadow);}
+.drill-col-header{display:grid;grid-template-columns:210px 1fr 1fr 1fr 8px 1fr 1fr 8px 1fr 1fr 1fr 8px 1fr 1fr 1fr;background:var(--surface2);border-bottom:1px solid var(--border);}
+.dch{padding:10px 8px;text-align:center;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;}
+.dch-name{padding:10px 16px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);}
+.dch-sep{background:var(--border);}
+.dch-leads{color:var(--blue);}
+.dch-elig{color:var(--teal);}
+.dch-mv{color:var(--burnt);}
+.dch-sales{color:var(--sage);}
+.drill-sub{display:grid;grid-template-columns:210px 1fr 1fr 1fr 8px 1fr 1fr 8px 1fr 1fr 1fr 8px 1fr 1fr 1fr;border-bottom:2px solid var(--border);background:var(--surface);}
+.dsub{padding:6px 8px;text-align:center;font-size:10px;color:var(--text3);}
+.dsub-name{padding:6px 16px;font-size:10px;color:var(--text3);}
+.dsub-sep{background:var(--border);}
+.dr{display:grid;grid-template-columns:210px 1fr 1fr 1fr 8px 1fr 1fr 8px 1fr 1fr 1fr 8px 1fr 1fr 1fr;border-bottom:1px solid var(--border2);transition:background 0.15s;}
+.dr:last-child{border-bottom:none;}
+.dr.r-india{background:var(--amber-dim);}
+.dr.r-india:hover{background:var(--amber-soft);}
+.dr.r-state{background:var(--surface);}
+.dr.r-state:hover{background:var(--surface2);}
+.dr.r-city{background:var(--surface);cursor:pointer;}
+.dr.r-city:hover{background:var(--surface2);}
+.dr.r-others{background:var(--surface);}
+.dr-sep{background:var(--border);}
+.dc{padding:12px 8px;text-align:center;display:flex;align-items:center;justify-content:center;}
+.dc-name{padding:12px 16px;display:flex;align-items:center;gap:8px;}
+.dc-name.ind{color:var(--amber);font-size:15px;font-weight:700;}
+.dc-name.st{color:var(--text);font-size:14px;font-weight:600;border-left:3px solid var(--amber);padding-left:13px;}
+.dc-name.ci{color:var(--text);font-size:13px;padding-left:28px;border-left:2px solid var(--border);}
+.dc-name.ot{color:var(--text3);font-size:12px;font-style:italic;padding-left:28px;}
+.arrow{font-size:10px;color:var(--amber);transition:transform 0.2s;flex-shrink:0;}
+.r-india.open .arrow,.r-state.open .arrow{transform:rotate(90deg);}
+.n-tgt{font-size:12px;color:var(--text3);}
+.n-ach{font-size:16px;font-weight:700;}
+.n-def{font-size:12px;font-weight:600;}
+.c-blue{color:var(--blue);}
+.c-teal{color:var(--teal);}
+.c-burnt{color:var(--burnt);}
+.c-sage{color:var(--sage);}
+.c-ok{color:var(--sage);}
+.c-bad{color:var(--red);}
+.c-dim{color:var(--text3);}
+.c-grey{color:var(--text2);}
+.bg-leads{background:var(--blue-dim);}
+.bg-elig{background:var(--teal-dim);}
+.bg-mv{background:var(--burnt-dim);}
+.bg-sales{background:var(--sage-dim);}
+.city-link{font-size:10px;color:var(--amber);opacity:0.6;margin-left:3px;}
+.rf-wrap{display:flex;flex-direction:column;gap:20px;}
+.rf-block{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);}
+.rf-hdr{padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);}
+.rf-hdr-sales{border-left:4px solid var(--red);}
+.rf-hdr-mv{border-left:4px solid var(--burnt);}
+.rf-hdr-lead{border-left:4px solid var(--blue);}
+.rf-hdr-title{font-weight:700;font-size:15px;}
+.rf-badge{font-family:'Space Mono',monospace;font-size:10px;padding:3px 10px;border-radius:20px;margin-left:auto;}
+.rf-badge-sales{background:var(--red-dim);color:var(--red);}
+.rf-badge-mv{background:var(--burnt-dim);color:var(--burnt);}
+.rf-badge-lead{background:var(--blue-dim);color:var(--blue);}
+.rf-badge-ok{background:var(--sage-dim);color:var(--sage);}
+.rf-row{padding:12px 20px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;}
+.rf-row:last-child{border-bottom:none;}
+.rf-city{font-weight:600;font-size:14px;}
+.rf-meta{font-size:12px;color:var(--text2);margin-top:2px;}
+.rf-num{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;}
+.rf-ok{padding:16px 20px;color:var(--sage);font-size:13px;font-weight:500;}
+.form-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:24px;margin-bottom:20px;box-shadow:var(--shadow);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.form-row-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.fg{display:flex;flex-direction:column;gap:6px;}
+.flabel{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);}
+.finput{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 14px;font-family:'Inter',sans-serif;font-size:14px;outline:none;border-radius:8px;transition:border-color 0.2s;width:100%;}
+.finput:focus{border-color:var(--amber);}
+select.finput{cursor:pointer;}
+.fhint{font-size:11px;color:var(--text2);}
+.fi-blue{border-color:rgba(86,168,245,0.4)!important;}
+.fi-blue:focus{border-color:var(--blue)!important;}
+.fi-teal{border-color:rgba(47,214,168,0.4)!important;}
+.fi-teal:focus{border-color:var(--teal)!important;}
+.fi-burnt{border-color:rgba(245,166,35,0.4)!important;}
+.fi-burnt:focus{border-color:var(--burnt)!important;}
+.fi-sage{border-color:rgba(95,214,111,0.4)!important;}
+.fi-sage:focus{border-color:var(--sage)!important;}
+.btn{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:11px 22px;cursor:pointer;border:none;font-weight:700;border-radius:8px;transition:all 0.2s;}
+.btn-amber{background:var(--amber);color:var(--base);}
+.btn-amber:hover{background:#f5c863;}
+.btn-ghost{background:transparent;color:var(--amber);border:1px solid rgba(232,184,75,0.4);}
+.btn-ghost:hover{background:var(--amber-dim);}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,92,92,0.3);}
+.btn-full{width:100%;margin-top:4px;}
+.btn-sm{padding:6px 12px;font-size:9px;}
+.setup-block{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:20px 22px;margin-bottom:16px;}
+.setup-title{font-size:15px;font-weight:700;margin-bottom:3px;}
+.setup-sub{font-size:12px;color:var(--text2);margin-bottom:14px;}
+.city-tbl{width:100%;border-collapse:collapse;}
+.city-tbl th{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.city-tbl td{padding:9px 12px;border-bottom:1px solid var(--border2);}
+.city-tbl tr:hover td{background:var(--surface2);}
+.tgt-input{background:transparent;border:none;color:var(--amber);font-family:'Space Mono',monospace;font-size:14px;width:80px;text-align:center;outline:none;}
+.tgt-input:focus{border-bottom:1px solid var(--amber);}
+.del-btn{background:none;border:none;color:var(--red);cursor:pointer;opacity:0.35;font-size:18px;padding:0 6px;}
+.del-btn:hover{opacity:1;}
+.ve{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:10px;border-left:3px solid var(--border);}
+.ve.approved{border-left-color:var(--sage);}
+.ve.flagged{border-left-color:var(--red);}
+.ve.pending{border-left-color:var(--burnt);}
+.ve-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.ve-nums{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px;}
+.ve-num{font-size:12px;color:var(--text2);}
+.ve-num strong{color:var(--text);}
+.ve-actions{display:flex;gap:8px;}
+.pill{font-size:10px;font-weight:600;padding:2px 10px;border-radius:20px;display:inline-block;}
+.pill-ok{background:var(--sage-dim);color:var(--sage);}
+.pill-warn{background:var(--burnt-dim);color:var(--burnt);}
+.pill-bad{background:var(--red-dim);color:var(--red);}
+.modal-overlay{position:fixed;inset:0;background:rgba(10,10,14,0.92);z-index:500;overflow-y:auto;padding:24px;}
+.modal-box{max-width:980px;margin:0 auto;background:var(--surface);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-lg);border:1px solid var(--border);}
+.modal-hdr{background:var(--surface2);padding:24px 28px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--border);}
+.modal-body{padding:24px 28px;}
+.city-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.cs-card{border-radius:8px;padding:16px;text-align:center;border:1px solid var(--border);}
+.cs-val{font-size:28px;font-weight:700;line-height:1;margin-bottom:4px;}
+.cs-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:4px;}
+.cs-meta{font-size:11px;color:var(--text3);}
+.day-tbl{width:100%;border-collapse:collapse;}
+.day-tbl th{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);padding:9px 10px;text-align:center;border-bottom:1px solid var(--border);background:var(--surface2);}
+.day-tbl th:first-child,.day-tbl th:nth-child(2){text-align:left;}
+.day-tbl td{padding:9px 10px;border-bottom:1px solid var(--border2);text-align:center;font-size:13px;color:var(--text2);}
+.day-tbl td:first-child{font-family:'Space Mono',monospace;color:var(--amber);text-align:left;font-weight:700;}
+.day-tbl td:nth-child(2){text-align:left;font-size:12px;}
+.day-tbl tr.today td{background:var(--amber-dim);}
+.day-tbl tr:hover td{background:var(--surface2);}
+.no-data{color:var(--text3);}
+.div{height:1px;background:var(--border);margin:20px 0;}
+.empty{text-align:center;padding:32px;color:var(--text3);font-size:13px;}
+.toast{position:fixed;bottom:20px;right:20px;padding:11px 20px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;z-index:999;opacity:0;transform:translateY(8px);transition:all 0.3s;pointer-events:none;border-radius:8px;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast-ok{background:var(--sage);color:#16161a;}
+.toast-err{background:var(--red);color:#fff;}
+@media(max-width:900px){
+  .metric-row{grid-template-columns:1fr 1fr;}
+  #headline-strip{grid-template-columns:1fr 1fr!important;}
+  .drill-col-header,.drill-sub,.dr{min-width:900px;}
+  .drill-card{overflow-x:auto;}
+  .form-row-4{grid-template-columns:1fr 1fr;}
+  .nav-tab{padding:16px 10px;font-size:9px;}
+  .dash-subtabs{overflow-x:auto;}
+}
+@media(max-width:560px){
+  .metric-row{grid-template-columns:1fr 1fr;}
+  #headline-strip{grid-template-columns:1fr 1fr!important;}
+  .topnav{flex-wrap:nowrap;padding:0 14px;}
+  .nav-quick{display:none;}
+  .menu-txt{display:inline;}
+  .view{padding:18px 14px;}
+  .day-pill{display:none;}
+}
+.dash-subtabs{position:sticky;top:54px;z-index:50;display:flex;gap:8px;flex-wrap:nowrap;margin:0 0 24px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto;}
+.dash-subtab{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.2px;padding:10px 18px;cursor:pointer;color:var(--text2);background:transparent;border:1px solid transparent;border-radius:10px;white-space:nowrap;transition:all 0.15s;display:flex;align-items:center;gap:7px;}
+.dash-subtab:hover{color:var(--text);background:var(--surface2);}
+.dash-subtab.active{color:var(--base);background:var(--amber);border-color:var(--amber);box-shadow:0 2px 8px rgba(232,184,75,0.35);}
+.dash-subtab.active .dot{display:none;}
+.dash-subtab .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dash-panel{display:none;animation:fadeUp 0.25s ease;}
+.dash-panel.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<div class="topnav">
+  <div class="brand">SAFC <em>·</em> INDIA TRACKER</div>
+  <div class="nav-quick" id="nav-quick">
+    <div class="nav-tab active" onclick="switchTab('dashboard',this)">Dashboard</div>
+    <div class="nav-tab" onclick="switchTab('entry',this)">Daily Entry</div>
+    <div class="nav-tab" onclick="switchTab('verify',this)">Verify</div>
+  </div>
+  <div class="nav-right">
+    <div class="day-pill" id="dayPill"></div>
+    <button class="menu-btn" id="menu-btn" onclick="toggleMenu(event)" aria-label="Menu">
+      <span class="menu-ico">☰</span><span class="menu-txt">Menu</span>
+    </button>
+  </div>
+  <div class="menu-drawer" id="menu-drawer">
+    <div class="menu-drawer-hdr">All Pages</div>
+    <a class="menu-item" onclick="menuGo('dashboard',this)">Dashboard</a>
+    <a class="menu-item" onclick="menuGo('redflags',this)">Red Flags</a>
+    <a class="menu-item" onclick="menuGo('entry',this)">Daily Entry</a>
+    <a class="menu-item" onclick="menuGo('calldisc',this)">Call Discipline</a>
+    <a class="menu-item" onclick="menuGo('verify',this)">Verify</a>
+    <a class="menu-item" onclick="menuGo('insidesales',this)">Inside Sales</a>
+    <a class="menu-item" onclick="menuGo('hr',this)">HR</a>
+    <a class="menu-item" onclick="menuGo('modules',this)">L&amp;D</a>
+    <a class="menu-item" onclick="menuGo('awareness',this)">Awareness</a>
+    <a class="menu-item" onclick="menuGo('setup',this)">Setup</a>
+    <a class="menu-item" onclick="menuGo('settings',this)">Settings</a>
+    <a class="menu-item" onclick="menuGo('log',this)">Log</a>
+  </div>
+  <div class="menu-backdrop" id="menu-backdrop" onclick="closeMenu()"></div>
+</div>
+<div class="view active" id="view-dashboard">
+  <div class="pg-title">India Master Dashboard</div>
+  <div class="pg-sub" id="dash-sub"></div>
+  <div id="headline-strip" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:6px 0 20px;"></div>
+  <div id="entry-status" style="margin:0 0 20px;"></div>
+  <div class="form-card" style="padding:14px 18px;margin-bottom:20px;">
+    <div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;">
+      <div class="fg"><label class="flabel">View</label>
+        <select class="finput" id="f-mode" onchange="onFilterMode()" style="min-width:130px;">
+          <option value="all">All month</option>
+          <option value="day">Specific day</option>
+          <option value="range">Date range</option>
+        </select>
+      </div>
+      <div class="fg" id="fg-day" style="display:none;"><label class="flabel">Day</label><input type="date" class="finput" id="f-day" onchange="renderDash();renderISDash();"/></div>
+      <div class="fg" id="fg-from" style="display:none;"><label class="flabel">From</label><input type="date" class="finput" id="f-from" onchange="renderDash();renderISDash();"/></div>
+      <div class="fg" id="fg-to" style="display:none;"><label class="flabel">To</label><input type="date" class="finput" id="f-to" onchange="renderDash();renderISDash();"/></div>
+      <div class="fg"><label class="flabel">Month</label>
+        <select class="finput" id="f-month" onchange="renderDash();renderISDash();">
+          <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option><option value="3">Apr</option><option value="4">May</option><option value="5" selected>Jun</option><option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option><option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
+        </select>
+      </div>
+      <div class="fg"><label class="flabel">Year</label>
+        <select class="finput" id="f-year" onchange="renderDash();renderISDash();"><option>2025</option><option selected>2026</option><option>2027</option></select>
+      </div>
+      <div class="fg"><label class="flabel">&nbsp;</label><button class="btn btn-ghost" onclick="resetFilter()">Reset</button></div>
+      <div class="fg" style="margin-left:auto;"><label class="flabel">&nbsp;</label>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="exportCSV()" title="Download the current lead-gen view as a CSV for Excel">Export CSV</button>
+          <button class="btn btn-ghost" onclick="copySummary()" title="Copy a WhatsApp-ready text summary">Copy Summary</button>
+          <button class="btn btn-amber" onclick="backupData()" title="Download a full backup of all data">Backup</button>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-top:8px;" id="f-label"></div>
+  </div>
+  <div class="dash-subtabs" id="dash-subtabs">
+    <div class="dash-subtab active" onclick="dashTab('leadgen',this)"><span class="dot" style="background:var(--blue);"></span>Lead Gen</div>
+    <div class="dash-subtab" onclick="dashTab('managers',this)"><span class="dot" style="background:var(--blue);"></span>Managers</div>
+    <div class="dash-subtab" onclick="dashTab('insidesales',this)"><span class="dot" style="background:var(--sage);"></span>Inside Sales</div>
+    <div class="dash-subtab" onclick="dashTab('hr',this)"><span class="dot" style="background:#f06aa0;"></span>HR</div>
+    <div class="dash-subtab" onclick="dashTab('ld',this)"><span class="dot" style="background:var(--amber);"></span>L&amp;D</div>
+    <div class="dash-subtab" onclick="dashTab('awareness',this)"><span class="dot" style="background:var(--burnt);"></span>Awareness</div>
+  </div>
+
+  <div class="dash-panel active" data-panel="leadgen">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+    <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--blue);letter-spacing:2px;text-transform:uppercase;">1 · Franchise Lead Generation</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="flabel" style="margin:0;">Show</span>
+      <select class="finput" id="f-ftype" onchange="renderDash()" style="width:auto;padding:7px 12px;font-size:13px;">
+        <option value="all">All franchises</option>
+        <option value="master">Master only</option>
+        <option value="unit">Unit only</option>
+      </select>
+      <select class="finput" id="f-source" onchange="renderDash()" style="width:auto;padding:7px 12px;font-size:13px;">
+        <option value="all">All sources</option>
+        <option value="Meta">Meta</option>
+        <option value="Google">Google</option>
+        <option value="Website">Website</option>
+        <option value="IVR">IVR</option>
+        <option value="Manual">Manual</option>
+      </select>
+      <select class="finput" id="f-others" onchange="renderDash()" style="width:auto;padding:7px 12px;font-size:13px;">
+        <option value="both">Both</option>
+        <option value="targeted">Targeted</option>
+        <option value="nontargeted">Non-targeted</option>
+      </select>
+    </div>
+  </div>
+  <div class="metric-row" id="metric-row"></div>
+  <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:4px 2px 10px;" id="others-row-label">Others (non-targeted areas) — use the "others" filter above to include them in the totals</div>
+  <div class="metric-row" id="metric-row-total"></div>
+  <div class="drill-card">
+    <div class="drill-col-header">
+      <div class="dch-name"></div>
+      <div class="dch dch-leads bg-leads">Tgt</div>
+      <div class="dch dch-leads bg-leads">Leads</div>
+      <div class="dch dch-leads bg-leads">Gap</div>
+      <div class="dch-sep"></div>
+      <div class="dch dch-elig bg-elig">Elig &amp; Int</div>
+      <div class="dch dch-elig bg-elig">% Rate</div>
+      <div class="dch-sep"></div>
+      <div class="dch dch-mv bg-mv">MV Need</div>
+      <div class="dch dch-mv bg-mv">MV Done</div>
+      <div class="dch dch-mv bg-mv">Gap</div>
+      <div class="dch-sep"></div>
+      <div class="dch dch-sales bg-sales">Sale Need</div>
+      <div class="dch dch-sales bg-sales">Sales</div>
+      <div class="dch dch-sales bg-sales">Gap</div>
+    </div>
+    <div class="drill-sub">
+      <div class="dsub-name" style="font-size:9px;color:var(--text3);padding:6px 16px;">Location</div>
+      <div class="dsub bg-leads" style="color:var(--text3);">Day target</div>
+      <div class="dsub bg-leads" style="color:var(--blue);font-weight:600;">Actual</div>
+      <div class="dsub bg-leads" style="color:var(--text3);">Deficit</div>
+      <div class="dsub-sep"></div>
+      <div class="dsub bg-elig" style="color:var(--teal);font-weight:600;">Count</div>
+      <div class="dsub bg-elig" style="color:var(--text3);">of leads</div>
+      <div class="dsub-sep"></div>
+      <div class="dsub bg-mv" style="color:var(--text3);">Leads/20</div>
+      <div class="dsub bg-mv" style="color:var(--burnt);font-weight:600;">Actual</div>
+      <div class="dsub bg-mv" style="color:var(--text3);">Deficit</div>
+      <div class="dsub-sep"></div>
+      <div class="dsub bg-sales" style="color:var(--text3);">MV/5</div>
+      <div class="dsub bg-sales" style="color:var(--sage);font-weight:600;">Actual</div>
+      <div class="dsub bg-sales" style="color:var(--text3);">Deficit</div>
+    </div>
+    <div id="drill-tree"></div>
+  </div>
+  </div><!-- /leadgen panel -->
+
+  <div class="dash-panel" data-panel="managers">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:0 0 16px;">
+    <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--blue);letter-spacing:2px;text-transform:uppercase;">Franchise Manager Performance <span style="color:var(--text3);text-transform:none;letter-spacing:0;">· approved entries only</span></div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <select class="finput" id="m-ftype" onchange="renderMgrPerf()" style="width:auto;padding:7px 12px;font-size:13px;">
+        <option value="all">All franchises</option><option value="master">Master only</option><option value="unit">Unit only</option>
+      </select>
+      <select class="finput" id="m-source" onchange="renderMgrPerf()" style="width:auto;padding:7px 12px;font-size:13px;">
+        <option value="all">All sources</option><option value="Meta">Meta</option><option value="Google">Google</option><option value="Website">Website</option><option value="IVR">IVR</option><option value="Manual">Manual</option>
+      </select>
+      <select class="finput" id="m-others" onchange="renderMgrPerf()" style="width:auto;padding:7px 12px;font-size:13px;">
+        <option value="both">Both</option><option value="targeted">Targeted</option><option value="nontargeted">Non-targeted</option>
+      </select>
+    </div>
+  </div>
+  <div id="mgr-perf"></div>
+  </div><!-- /managers panel -->
+
+  <div class="dash-panel" data-panel="insidesales">
+  <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--sage);letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">2 · Inside Sales — Bottles</div>
+  <div class="metric-row" id="is-dash-metrics"></div>
+  <div class="drill-card">
+    <div class="drill-col-header" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+      <div class="dch-name"></div>
+      <div class="dch dch-sales bg-sales">Target</div>
+      <div class="dch dch-sales bg-sales">Achieved</div>
+      <div class="dch dch-sales bg-sales">Deficit</div>
+    </div>
+    <div id="is-drill-tree"></div>
+  </div>
+  </div><!-- /insidesales panel -->
+
+  <div class="dash-panel" data-panel="hr">
+  <div style="font-family:'Space Mono',monospace;font-size:10px;color:#f06aa0;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">3 · HR Recruitment</div>
+  <div class="metric-row" id="hr-dash-metrics"></div>
+  <div class="drill-card">
+    <div class="drill-col-header" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+      <div class="dch-name"></div>
+      <div class="dch dch-sales bg-sales">Target</div>
+      <div class="dch dch-sales bg-sales">Leads</div>
+      <div class="dch dch-sales bg-sales">Gap</div>
+    </div>
+    <div id="hr-drill-tree"></div>
+  </div>
+  </div><!-- /hr panel -->
+
+  <div class="dash-panel" data-panel="ld">
+  <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--amber);letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">4 · L&amp;D Modules</div>
+  <div class="metric-row" id="mod-dash-metrics"></div>
+  <div class="drill-card"><div id="mod-drill-tree"></div></div>
+  </div><!-- /ld panel -->
+
+  <div class="dash-panel" data-panel="awareness">
+  <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--burnt);letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">5 · Pre-Launch Awareness</div>
+  <div class="metric-row" id="aw-dash-metrics" style="grid-template-columns:repeat(3,1fr);"></div>
+  <div class="drill-card">
+    <div class="drill-col-header" style="grid-template-columns:2fr 1fr;">
+      <div class="dch-name"></div>
+      <div class="dch dch-mv bg-mv">Recall / 10</div>
+    </div>
+    <div id="aw-drill-tree"></div>
+  </div>
+  </div><!-- /awareness panel -->
+</div>
+<div class="view" id="view-redflags">
+  <div class="pg-title">Red Flags</div>
+  <div class="pg-sub">Cities requiring immediate attention - sorted by severity</div>
+  <div class="rf-wrap" id="rf-content"></div>
+</div>
+<div class="view" id="view-entry">
+  <div class="pg-title">Daily Entry</div>
+  <div class="pg-sub">Nuke team fills every day. Select state, city and enter today's numbers.</div>
+  <div class="form-card">
+    <div class="form-row">
+      <div class="fg"><label class="flabel">State</label>
+        <select class="finput" id="e-state" onchange="populateCities()"><option value="">Select State</option></select>
+      </div>
+      <div class="fg"><label class="flabel">City / District</label>
+        <select class="finput" id="e-city" onchange="showHints()"><option value="">Select City</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label class="flabel">Date</label><input type="date" class="finput" id="e-date"/></div>
+      <div class="fg"><label class="flabel">Entered By</label><input type="text" class="finput" id="e-by" placeholder="Your name..."/></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label class="flabel">Lead Source</label>
+        <select class="finput" id="e-source"><option value="Meta">Meta</option><option value="Google">Google</option><option value="Website">Website</option><option value="IVR">IVR</option><option value="Manual">Manual</option></select>
+      </div>
+      <div class="fg"></div>
+    </div>
+    <div class="div" style="margin:12px 0;"></div>
+    <div class="form-row-4">
+      <div class="fg">
+        <label class="flabel" style="color:var(--blue);">Fresh Leads</label>
+        <input type="number" class="finput fi-blue" id="e-leads" placeholder="0" min="0" oninput="liveCalc()"/>
+        <span class="fhint" id="e-leads-hint"></span>
+      </div>
+      <div class="fg">
+        <label class="flabel" style="color:var(--teal);">Eligible &amp; Interested</label>
+        <input type="number" class="finput fi-teal" id="e-elig" placeholder="0" min="0" oninput="liveCalc()"/>
+        <span class="fhint" style="color:var(--teal);" id="e-elig-pct"></span>
+      </div>
+      <div class="fg">
+        <label class="flabel" style="color:var(--burnt);">Market Visits</label>
+        <input type="number" class="finput fi-burnt" id="e-mv" placeholder="0" min="0"/>
+        <span class="fhint" id="e-mv-hint"></span>
+      </div>
+      <div class="fg">
+        <label class="flabel" style="color:var(--sage);">Sales Closed</label>
+        <input type="number" class="finput fi-sage" id="e-sales" placeholder="0" min="0"/>
+        <span class="fhint" id="e-sales-hint"></span>
+      </div>
+    </div>
+    <div class="fg" style="margin-bottom:16px;"><label class="flabel">Notes</label><input type="text" class="finput" id="e-notes" placeholder="Optional..."/></div>
+    <button class="btn btn-amber btn-full" id="e-save-btn" onclick="saveEntry()">Save Entry</button>
+    <button class="btn btn-ghost btn-full" id="e-cancel-btn" onclick="cancelEdit()" style="display:none;margin-top:8px;">Cancel edit</button>
+  </div>
+  <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Recent Entries</div>
+  <div id="recent-list"></div>
+</div>
+
+<!-- CALL DISCIPLINE -->
+<div class="view" id="view-calldisc">
+  <div class="pg-title">Call Discipline — Lead Follow-up</div>
+  <div class="pg-sub">Reviewing yesterday's leads today, by franchise manager: were they called within the 5-min / 15-min SLA, and did fast calling improve outcomes? Working hours 10am–7pm.</div>
+  <div class="metric-row" id="cd-metrics"></div>
+  <div id="cd-insight"></div>
+  <div class="form-card">
+    <div class="form-row">
+      <div class="fg"><label class="flabel">Entered By</label><input type="text" class="finput" id="cd-by" placeholder="Your name..."/></div>
+      <div class="fg"><label class="flabel">Lead Date (the day leads were generated)</label><input type="date" class="finput" id="cd-date"/></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label class="flabel">Franchise Manager</label>
+        <select class="finput" id="cd-mgr" onchange="cdPrefill()"><option value="">Select manager</option></select>
+      </div>
+      <div class="fg"><label class="flabel">Data source</label>
+        <select class="finput" id="cd-source"><option value="manual">Manual (typed)</option><option value="crm" disabled>TeleCRM (auto) — coming soon</option></select>
+      </div>
+    </div>
+    <div class="div" style="margin:12px 0;"></div>
+    <div class="form-row-4">
+      <div class="fg"><label class="flabel" style="color:var(--blue);">Leads Generated</label><input type="number" class="finput fi-blue" id="cd-total" placeholder="0" min="0" oninput="cdLiveCalc()"/><span class="fhint" id="cd-total-hint">Leads that came in that day</span></div>
+      <div class="fg"><label class="flabel" style="color:var(--sage);">Called in 5 min</label><input type="number" class="finput fi-sage" id="cd-sla5" placeholder="0" min="0" oninput="cdLiveCalc()"/><span class="fhint" id="cd-sla5-hint"></span></div>
+      <div class="fg"><label class="flabel" style="color:var(--teal);">Called in 15 min</label><input type="number" class="finput fi-teal" id="cd-sla15" placeholder="0" min="0" oninput="cdLiveCalc()"/><span class="fhint" id="cd-sla15-hint"></span></div>
+      <div class="fg"><label class="flabel" style="color:var(--burnt);">Not Called</label><input type="number" class="finput fi-burnt" id="cd-notcalled" placeholder="0" min="0" oninput="cdLiveCalc()"/><span class="fhint" id="cd-notcalled-hint"></span></div>
+    </div>
+    <div class="form-row-4">
+      <div class="fg"><label class="flabel" style="color:var(--sage);">Spoke / Connected</label><input type="number" class="finput fi-sage" id="cd-connected" placeholder="0" min="0" oninput="cdLiveCalc()"/></div>
+      <div class="fg"><label class="flabel" style="color:var(--red);">Tried, Not Connected</label><input type="number" class="finput" id="cd-tried" placeholder="0" min="0" oninput="cdLiveCalc()"/></div>
+      <div class="fg"><label class="flabel">Status: Fresh</label><input type="number" class="finput" id="cd-fresh" placeholder="0" min="0" oninput="cdLiveCalc()"/></div>
+      <div class="fg"><label class="flabel">Status: In-progress</label><input type="number" class="finput" id="cd-inprog" placeholder="0" min="0" oninput="cdLiveCalc()"/></div>
+    </div>
+    <div class="form-row-4">
+      <div class="fg"><label class="flabel" style="color:var(--sage);">Of which: Fast-called &amp; converted</label><input type="number" class="finput fi-sage" id="cd-fastconv" placeholder="0" min="0" oninput="cdLiveCalc()"/><span class="fhint" id="cd-fastconv-hint">Closed leads that were called within 15 min</span></div>
+      <div class="fg"><label class="flabel" style="color:var(--sage);">Status: Closed (won)</label><input type="number" class="finput fi-sage" id="cd-closed" placeholder="0" min="0" oninput="cdLiveCalc()"/></div>
+      <div class="fg"><label class="flabel" style="color:var(--red);">Status: Lost</label><input type="number" class="finput" id="cd-lost" placeholder="0" min="0" oninput="cdLiveCalc()"/></div>
+      <div class="fg"><label class="flabel">Notes / Feedback</label><input type="text" class="finput" id="cd-notes" placeholder="What the manager reported..."/></div>
+    </div>
+    <div class="fhint" id="cd-validate" style="margin:4px 0 12px;"></div>
+    <button class="btn btn-amber btn-full" id="cd-save-btn" onclick="saveCD()">Save Call Review</button>
+    <button class="btn btn-ghost btn-full" id="cd-cancel-btn" onclick="cdCancelEdit()" style="display:none;margin-top:8px;">Cancel edit</button>
+  </div>
+
+  <div class="setup-block">
+    <div class="setup-title" style="margin-bottom:4px;">Franchise managers</div>
+    <div class="setup-sub">Add the managers whose call discipline you review. Used in the dropdown above.</div>
+    <div id="cd-mgr-list"></div>
+    <div style="display:flex;gap:10px;align-items:flex-end;margin-top:8px;">
+      <div class="fg" style="flex:1;"><label class="flabel">Manager name</label><input class="finput" id="cd-mgr-new" placeholder="e.g. Chennai — Suresh"/></div>
+      <button class="btn btn-amber" onclick="addCDMgr()">+ Add manager</button>
+    </div>
+  </div>
+
+  <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin:24px 0 12px;">Recent call reviews</div>
+  <div id="cd-recent"></div>
+</div>
+
+<div class="view" id="view-verify">
+  <div class="pg-title">MIS Verification</div>
+  <div class="pg-sub">Review and approve or flag Nuke's daily entries.</div>
+  <div id="verify-list"></div>
+</div>
+<div class="view" id="view-setup">
+  <div class="pg-title">Setup</div>
+  <div class="pg-sub">Configure at start of each month.</div>
+  <div class="form-card" style="margin-bottom:20px;">
+    <div class="form-row">
+      <div class="fg"><label class="flabel">Month</label>
+        <select class="finput" id="s-month">
+          <option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option selected>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option>
+        </select>
+      </div>
+      <div class="fg"><label class="flabel">Year</label><input type="number" class="finput" id="s-year" value="2026"/></div>
+    </div>
+    <div class="fg" style="max-width:180px;">
+      <label class="flabel">Working Days</label>
+      <input type="number" class="finput" id="s-wd" value="27"/>
+      <span class="fhint">Daily target = Monthly / working days x day#</span>
+    </div>
+  </div>
+  <div id="setup-states"></div>
+  <div style="display:flex;gap:12px;margin-top:8px;">
+    <button class="btn btn-amber" onclick="saveSetup()">Save Setup</button>
+    <button class="btn btn-ghost" onclick="addState()">+ Add State</button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="view" id="view-settings">
+  <div class="pg-title">Settings</div>
+  <div class="pg-sub">Period, working days, data backup &amp; restore.</div>
+
+  <div class="setup-block">
+    <div class="setup-title" style="margin-bottom:4px;">Reporting period &amp; working days</div>
+    <div class="setup-sub">Used across the dashboard for targets (per-day target = monthly ÷ working days).</div>
+    <div class="form-row-4" style="margin-top:6px;">
+      <div class="fg"><label class="flabel">Month</label>
+        <select class="finput" id="set-month" onchange="saveSettings()">
+          <option value="0">January</option><option value="1">February</option><option value="2">March</option><option value="3">April</option><option value="4">May</option><option value="5">June</option><option value="6">July</option><option value="7">August</option><option value="8">September</option><option value="9">October</option><option value="10">November</option><option value="11">December</option>
+        </select>
+      </div>
+      <div class="fg"><label class="flabel">Year</label>
+        <select class="finput" id="set-year" onchange="saveSettings()"><option>2025</option><option>2026</option><option>2027</option></select>
+      </div>
+      <div class="fg"><label class="flabel">Working days / month</label><input type="number" class="finput" id="set-wd" min="1" max="31" onchange="saveSettings()"/></div>
+      <div class="fg"></div>
+    </div>
+  </div>
+
+  <div class="setup-block">
+    <div class="setup-title" style="margin-bottom:4px;">Backup &amp; restore</div>
+    <div class="setup-sub">Your data lives in this browser. Download a backup regularly; restore it on a new device or after a reset.</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button class="btn btn-amber" onclick="backupData()">⬇ Download backup</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('restore-file').click()">⬆ Restore from backup</button>
+      <input type="file" id="restore-file" accept="application/json,.json" style="display:none;" onchange="restoreData(event)"/>
+    </div>
+    <div class="fhint" style="margin-top:8px;">Restoring replaces all current data with the contents of the backup file.</div>
+  </div>
+
+  <div class="setup-block" style="border:1px solid rgba(255,92,92,0.3);">
+    <div class="setup-title" style="margin-bottom:4px;color:var(--red);">Danger zone</div>
+    <div class="setup-sub">Permanently erase all tracker data in this browser. Download a backup first.</div>
+    <button class="btn btn-danger" style="margin-top:8px;" onclick="resetAllData()">Reset all data</button>
+  </div>
+</div>
+
+<div class="view" id="view-hr">
+  <div class="pg-title">HR Recruitment</div>
+  <div class="pg-sub">Open positions by role then state - enter qualified leads generated - target 15 each</div>
+  <div class="metric-row" id="hr-tab-metrics"></div>
+  <div id="hr-states"></div>
+</div>
+
+<!-- MODULES -->
+<div class="view" id="view-modules">
+  <div class="pg-title">L&amp;D Training Modules</div>
+  <div class="pg-sub">Weekly modules - set deadlines, mark complete when delivered &amp; approved</div>
+  <div class="metric-row" id="mod-tab-metrics"></div>
+  <div id="mod-list"></div>
+</div>
+
+<!-- INSIDE SALES -->
+<div class="view" id="view-insidesales">
+  <div class="pg-title">Inside Sales - Event &amp; Marriage Bottles</div>
+  <div class="pg-sub">28 franchises - 2,500 bottles/week each - 70,000 total. Enter bottles &amp; spend per franchise per day.</div>
+  <div class="metric-row" id="is-metrics"></div>
+  <div class="form-card">
+    <div class="form-row">
+      <div class="fg"><label class="flabel">Entered By</label><input type="text" class="finput" id="is-by" placeholder="Your name..."/></div>
+      <div class="fg"><label class="flabel">Date</label><input type="date" class="finput" id="is-entry-date"/></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label class="flabel">State</label>
+        <select class="finput" id="is-state" onchange="fillDist('is-state','is-franchise');"><option value="">Select state</option></select>
+      </div>
+      <div class="fg"><label class="flabel">Franchise / District</label>
+        <select class="finput" id="is-franchise" onchange="isFormPrefill()"><option value="">Select state first</option></select>
+      </div>
+    </div>
+    <div class="div" style="margin:12px 0;"></div>
+    <div class="form-row-4">
+      <div class="fg"><label class="flabel" style="color:var(--sage);">Bottles Sold</label><input type="number" class="finput fi-sage" id="is-bottles" placeholder="0" min="0" oninput="isFormCost()"/></div>
+      <div class="fg"><label class="flabel" style="color:var(--burnt);">Spend (Rs.)</label><input type="number" class="finput fi-burnt" id="is-spend" placeholder="0" min="0" oninput="isFormCost()"/></div>
+      <div class="fg"><label class="flabel">Cost / Bottle</label><div class="finput" id="is-cost-preview" style="display:flex;align-items:center;color:var(--text2);">—</div></div>
+      <div class="fg"><label class="flabel">&nbsp;</label><button class="btn btn-amber" onclick="saveISEntry()">Save Entry</button></div>
+    </div>
+    <div class="fhint" style="margin-top:10px;">This logs who entered the data. Cost/bottle cap is Rs.2 — over that gets a red flag.</div>
+  </div>
+  <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--sage);letter-spacing:2px;text-transform:uppercase;margin:24px 0 12px;">Recent entries</div>
+  <div id="is-recent"></div>
+  <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--amber);letter-spacing:2px;text-transform:uppercase;margin:24px 0 12px;">Franchises &amp; weekly targets</div>
+  <div id="is-states"></div>
+</div>
+
+<!-- AWARENESS -->
+<div class="view" id="view-awareness">
+  <div class="pg-title">Pre-Launch Ad Awareness</div>
+  <div class="pg-sub">Cities being made brand-aware before FM arrives - track recall score out of 10</div>
+  <div class="metric-row" id="aw-tab-metrics" style="grid-template-columns:repeat(3,1fr);"></div>
+  <div id="aw-list"></div>
+</div>
+
+<!-- LOG (back-end audit trail) -->
+<div class="view" id="view-log">
+  <div class="pg-title">Activity Log</div>
+  <div class="pg-sub">Back-end audit trail - every add, edit and delete across all pages, with who and when.</div>
+  <div class="form-card" style="padding:12px 16px;margin-bottom:16px;">
+    <div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;">
+      <div class="fg"><label class="flabel">Filter by page</label>
+        <select class="finput" id="log-filter" onchange="renderLog()">
+          <option value="">All pages</option>
+          <option value="Inside Sales">Inside Sales</option>
+          <option value="Daily Entry">Daily Entry</option>
+          <option value="HR">HR</option>
+          <option value="L&D">L&amp;D</option>
+          <option value="Awareness">Awareness</option>
+          <option value="Setup">Setup</option>
+        </select>
+      </div>
+      <div class="fg"><label class="flabel">Search name / detail</label><input type="text" class="finput" id="log-search" oninput="renderLog()" placeholder="e.g. Ramesh, Chennai..."/></div>
+      <div class="fg"><label class="flabel">&nbsp;</label><button class="btn btn-danger" onclick="clearLog()">Clear log</button></div>
+    </div>
+  </div>
+  <div id="log-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="{{ url_for('static', filename='js/store.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+</html>

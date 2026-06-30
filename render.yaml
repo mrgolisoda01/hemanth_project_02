@@ -1,0 +1,19 @@
+# Render.com deployment config
+# Push this repo to GitHub, then on Render: New -> Blueprint -> pick this repo.
+# Set SUPABASE_URL and SUPABASE_ANON_KEY in the Render dashboard (Environment),
+# NOT in this file.
+
+services:
+  - type: web
+    name: safc-tracker
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: SUPABASE_URL
+        sync: false          # set this in the Render dashboard
+      - key: SUPABASE_ANON_KEY
+        sync: false          # set this in the Render dashboard
+      - key: PYTHON_VERSION
+        value: "3.12.4"
