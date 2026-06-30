@@ -66,39 +66,54 @@
   }
 
   // ---- diff the entries array on write and sync to the relational table ----
+  // The frontend assigns its own numeric ids; Supabase assigns uuids. We reconcile
+  // by a natural key (date|state|city|by) so an Approve/edit updates the right row
+  // instead of creating duplicates. After create, we write the uuid back so the
+  // in-memory array and the relational table stay in lock-step.
+  function natKey(e) {
+    return [e.date, e.state, e.city, e.by || ""].join("|");
+  }
   async function syncEntries(newArr) {
-    const oldById = {};
-    entriesRowCache.forEach((r) => (oldById[r.id] = r));
-    const newById = {};
-    newArr.forEach((e) => { if (e.id) newById[e.id] = e; });
+    const oldRows = entriesRowCache.slice();
+    const oldByNat = {};
+    oldRows.forEach((r) => { oldByNat[natKey(rowToEntry(r))] = r; });
+    const newByNat = {};
+    newArr.forEach((e) => { newByNat[natKey(e)] = e; });
 
-    // deletes: in old, not in new
-    for (const id of Object.keys(oldById)) {
-      if (!newById[id]) {
-        try { await apiSend("/api/entries/" + id, "DELETE"); } catch (e) {}
+    // DELETES: a server row whose natural key is no longer present
+    for (const r of oldRows) {
+      if (!(natKey(rowToEntry(r)) in newByNat)) {
+        try { await apiSend("/api/entries/" + r.id, "DELETE"); } catch (e) {}
       }
     }
-    // creates (no uuid yet — frontend used a numeric/temp id) & updates
+
+    // CREATE or UPDATE each current entry
     for (const e of newArr) {
-      const isUuid = typeof e.id === "string" && e.id.length >= 32;
-      if (!isUuid) {
-        // new row — create it, capture the uuid back
+      const match = oldByNat[natKey(e)];
+      if (!match) {
+        // brand new -> create, capture uuid back onto the in-memory object
         try {
           const created = await apiSend("/api/entries", "POST", e);
           if (created && created.id) e.id = created.id;
         } catch (err) {}
-      } else if (oldById[e.id]) {
-        // existing — patch if changed
-        const o = rowToEntry(oldById[e.id]);
-        const changed = ["date","state","city","leads","eligible","mv","sales","source","by","status","notes"]
+      } else {
+        // existing row -> ensure the in-memory id matches the server uuid
+        e.id = match.id;
+        const o = rowToEntry(match);
+        const changed = ["leads","eligible","mv","sales","source","status","notes"]
           .some((k) => o[k] !== e[k]);
         if (changed) {
-          try { await apiSend("/api/entries/" + e.id, "PATCH", e); } catch (err) {}
+          try { await apiSend("/api/entries/" + match.id, "PATCH", e); } catch (err) {}
         }
       }
     }
-    // refresh the raw cache
-    try { entriesRowCache = await apiGet("/api/entries"); } catch (e) {}
+
+    // Update our raw cache in place so the NEXT save compares correctly,
+    // without yanking the app's in-memory array (which holds the user's latest edit).
+    try {
+      entriesRowCache = await apiGet("/api/entries");
+      KV_CACHE[ENTRIES_KEY] = JSON.stringify(entriesRowCache.map(rowToEntry));
+    } catch (e) {}
   }
 
   // ---- the global `store` object: same API as localStorage ----
